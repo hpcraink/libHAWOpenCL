@@ -836,7 +836,7 @@ opencl_devinfo_t opencl_devinfo[] = {
     // Either way, the print function would be similar to opencl_print_device_partition_properties, due to []
 
 
-// This sholud actually be called only for devices > CL_VERSION_2_0
+// This should actually be called only for devices > CL_VERSION_2_0
 #if defined (CL_VERSION_2_0)
     {OPENCL_NAME(CL_DEVICE_SVM_CAPABILITIES),
         "Describes the vairous shared virtual memory (SVM) memory allocation types the device supports. This is a bit-field that describes a combination of the following values: CL_DEVICE_SVM_COARSE_GRAIN_BUFFER, CL_DEVICE_SVM_FINE_GRAIN_BUFFER, CL_DEVICE_SVM_FINE_GRAIN_SYSTEM, CL_DEVICE_SVM_ATOMICS",
@@ -995,7 +995,7 @@ int opencl_print_device(cl_device_id cl_device) {
 
         printf ("%s:",
                 opencl_devinfo[i].cl_devinfo_str);
-
+        // XXX Should only call if the OpenCL Version is supported
         err = clGetDeviceInfo(cl_device, opencl_devinfo[i].cl_devinfo,
                               val_size, val, &val_len);
         if (CL_SUCCESS != err)
