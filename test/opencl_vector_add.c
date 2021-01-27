@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
     }
     // Select any of the above devices, OR select one specific preferred device.
     // opencl_init(USE_DEVICE_TYPE, 0, &device_id, &context, &command_queue);
-    opencl_init(USE_DEVICE_TYPE, haw_devices[0].device_id, &device_id, &context, &command_queue);
+    opencl_init(USE_DEVICE_TYPE, haw_devices[USE_DEVICE_NUM].device_id, &device_id, &context, &command_queue);
     // opencl_print_device(device_id);
     opencl_kernel_build(KERNEL_SOURCE, "vector_add",
                         device_id, context, &kernel);
