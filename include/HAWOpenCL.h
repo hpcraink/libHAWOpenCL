@@ -2,7 +2,7 @@
  *  Library to ease OpenCL Programming
  *
  *  Copyright (c) 2015-2016 Rainer Keller, HFT Stuttgart. All rights reserved.
- *  Copyright (c) 2018-2019 Rainer Keller, HS Esslingen. All rights reserved.
+ *  Copyright (c) 2018-2021 Rainer Keller, HS Esslingen. All rights reserved.
  *
  */
 
@@ -134,7 +134,8 @@ int opencl_print_info(void);
  * @warn The User is responsible for freeing the devices array!
  */
 int opencl_get_devices(const cl_device_type on_device_type, 
-        cl_uint * num_devices, hawopencl_device ** devices);
+        cl_uint * num_devices,
+        hawopencl_device ** devices) __HAW_OPENCL_ATTR_NONNULL__(2,3);
 
 
 /**
@@ -156,7 +157,7 @@ int opencl_init(const cl_device_type on_device_type,
         cl_device_id preferred_device_id,
         cl_device_id * device_id,
         cl_context * context,
-        cl_command_queue * command_queue);
+        cl_command_queue * command_queue) __HAW_OPENCL_ATTR_NONNULL__(3,4,5);
 
 /**
  * Print the provided error-status into the print-buffer of length len.
@@ -169,7 +170,23 @@ int opencl_init(const cl_device_type on_device_type,
  * @return the error-status as passed in;
  *         CL_SUCCESS in case of no error
  */
-int opencl_printf_error(cl_int status, unsigned int len, char * print_buffer);
+int opencl_printf_error(cl_int status, unsigned int len, char * print_buffer) __HAW_OPENCL_ATTR_NONNULL__(3);
+
+/**
+ * Macro to exit in case of error status (!= CL_SUCCESS) with provided message.
+ *
+ * @param[in]   status        The status variable which is checked against CL_SUCCESS
+ * @param[in]   msg           The error message to print in case of error
+ */
+#define opencl_check_error(status,msg) do { \
+            if (CL_SUCCESS != status) { \
+                char buf[256]; \
+                opencl_printf_error(status, sizeof(buf)-1, buf); \
+                fprintf(stderr, "ERROR (%s:%d): %s. %s\n", \
+                        __FILE__, __LINE__, (msg), buf); \
+                exit(-1); \
+            } \
+        } while(0)
 
 /**
  * Load the file named kernel_file_name as String.
@@ -177,7 +194,7 @@ int opencl_printf_error(cl_int status, unsigned int len, char * print_buffer);
  * @return Kernel as String in case of success
  *         NULL otherwise
  */
-char * opencl_kernel_load(const char * kernel_file_name);
+char * opencl_kernel_load(const char * kernel_file_name) __HAW_OPENCL_ATTR_NONNULL__(1) __HAW_OPENCL_ATTR_WARN_UNUSED_RESULT__;
 
 
 /**
@@ -198,7 +215,7 @@ int opencl_kernel_build(const char * kernel_source,
         const char * kernel_name,
         const cl_device_id device_id,
         const cl_context context,
-        cl_kernel * kernel);
+        cl_kernel * kernel) __HAW_OPENCL_ATTR_NONNULL__(1,2,5);
 
 /**
  * Gets the kernel information for a specific device.
@@ -211,7 +228,7 @@ int opencl_kernel_build(const char * kernel_source,
  */
 int opencl_kernel_info(const cl_kernel kernel,
         const cl_device_id device_id,
-        hawopencl_kernel * kernel_info);
+        hawopencl_kernel * kernel_info) __HAW_OPENCL_ATTR_NONNULL__(3);
 
 /**
  * Print the kernel information just gathered.
@@ -229,7 +246,7 @@ int opencl_kernel_print_info(const hawopencl_kernel ki);
  *
  * @return 0 in case of success
  */
-int opencl_profile_event_init(hawopencl_profile_events * events);
+int opencl_profile_event_init(hawopencl_profile_events * events) __HAW_OPENCL_ATTR_NONNULL__(1);
 
 /**
  * Add a event to the list of profiled events, resizing internal arrays.
@@ -244,7 +261,7 @@ int opencl_profile_event_init(hawopencl_profile_events * events);
 int opencl_profile_event_add(hawopencl_profile_events * events,
         cl_event event,
         size_t size,
-        const char * event_name);
+        const char * event_name) __HAW_OPENCL_ATTR_NONNULL__(1,4);
 
 /**
  * Clear all information for profiled events.
@@ -253,7 +270,7 @@ int opencl_profile_event_add(hawopencl_profile_events * events,
  *
  * @return 0 in case of success
  */
-int opencl_profile_event_clear(const hawopencl_profile_events * events);
+int opencl_profile_event_clear(const hawopencl_profile_events * events) __HAW_OPENCL_ATTR_NONNULL__(1);
 
 
 /**
@@ -263,7 +280,7 @@ int opencl_profile_event_clear(const hawopencl_profile_events * events);
  *
  * @return 0 in case of success
  */
-int opencl_profile_event_print(const hawopencl_profile_events * events);
+int opencl_profile_event_print(const hawopencl_profile_events * events) __HAW_OPENCL_ATTR_NONNULL__(1);
 
 END_C_DECLS
 

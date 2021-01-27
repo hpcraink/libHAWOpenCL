@@ -8,15 +8,20 @@
 /* Define to 1 if system has <stdlib.h> header file. */
 #cmakedefine HAVE_STDLIB_H 1
 
-/* Define to 1 if system has <sys/types.h> header file. */
-#cmakedefine HAVE_SYS_TYPES_H 1
-
 /* Define to 1 if system has <sys/stat.h> header file. */
 #cmakedefine HAVE_SYS_STAT_H 1
+
+/* Define to 1 if system has <sys/types.h> header file. */
+#cmakedefine HAVE_SYS_TYPES_H 1
 
 /* Define to 1 if system has <unistd.h> header file. */
 #cmakedefine HAVE_UNISTD_H 1
 
+/* Define to 1 if compiler supports __attribute__((nonnull)). */
+#cmakedefine HAVE___ATTRIBUTE__NONNULL 1
+
+/* Define to 1 if compiler supports __attribute__((warn_unused_result)). */
+#cmakedefine HAVE___ATTRIBUTE__WARN_UNUSED_RESULT 1
 
 /* Define to 1 if user set -DHAWOPENCL_WANT_OPENGL. */
 #cmakedefine HAWOPENCL_WANT_OPENGL 1
@@ -33,6 +38,18 @@
 #else
 #  define BEGIN_C_DECLS          /* empty */
 #  define END_C_DECLS            /* empty */
+#endif
+
+#if defined(HAVE___ATTRIBUTE__NONNULL) && (HAVE___ATTRIBUTE__NONNULL == 1)
+#  define __HAW_OPENCL_ATTR_NONNULL__(...)           __attribute__((nonnull(__VA_ARGS__)))
+#else
+#  define __HAW_OPENCL_ATTR_NONNULL__(...)
+#endif
+
+#if defined(HAVE___ATTRIBUTE__WARN_UNUSED_RESULT) && (HAVE___ATTRIBUTE__WARN_UNUSED_RESULT == 1)
+#  define __HAW_OPENCL_ATTR_WARN_UNUSED_RESULT__     __attribute__((warn_unused_result))
+#else
+#  define __HAW_OPENCL_ATTR_WARN_UNUSED_RESULT__
 #endif
 
 #endif /* HAWOPENCL_CONFIG_H */
