@@ -12,6 +12,10 @@ check_include_files("unistd.h" HAVE_UNISTD_H)
 
 option (HAWOPENCL_WANT_OPENGL "If the OpenCL library should work with/on GPU using OpenGL")
 
+# Wonderful: CMP0072 is warning ALL the time about the changed behaviour of find_package(OpenGL)
+# At least, setting this option here (and not within the if) shows it only once.
+set(OpenGL_GL_PREFERENCE GLVND CACHE STRING "Linux-only: if GLVND, use the vendor-neutral GL libraries (default). If LEGACY, use the legacy ones (might be necessary to have optirun/primusrun work)")
+set_property(CACHE OpenGL_GL_PREFERENCE PROPERTY STRINGS GLVND LEGACY)
 if(HAWOPENCL_WANT_OPENGL)
     find_package(OpenGL REQUIRED)
     include_directories(${OPENGL_INCLUDE_DIR})
@@ -30,5 +34,5 @@ add_library(HAWOpenCL STATIC
     opencl_profile_events.c)
 
 install(TARGETS HAWOpenCL
-        ARCHIVE DESTINATION lib
+    ARCHIVE DESTINATION lib
 )
