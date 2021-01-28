@@ -14,19 +14,32 @@ set (${PROJECT_NAME}_VERSION_MINOR 1)
 
 check_c_source_compiles(
     "
-        static void f(char * ptr) __attribute__ ((nonnull(1)));
-        int main(void) {return 0;}
+        static int f(char * ptr) __attribute__ ((nonnull(1)));
+        static int f(char * ptr) {
+            return (ptr[0] != 0) ? 1 : 0;
+        }
+        int main(int argc, char * argv[]) {return f(argv[0]);}
     "
     HAVE___ATTRIBUTE__NONNULL
+    FAIL_REGEX
+        "unknown attribute"             # CLang/LLVM
+        "attribute directive ignored"   # GNU
+        "unknown attribute"             # Intel
+        "unknown attribute"             # PGI
 )
 
 check_c_source_compiles(
     "
-        static char * f(void) __attribute__ ((warn_unused_result));
-        static char * f(void) { return (char*)0; }
-        int main(void) { return (int)f() & 0xff;}
+        static int f(void) __attribute__ ((warn_unused_result));
+        static int f(void) { return 0; }
+        int main(void) { f(); return 0;}
     "
     HAVE___ATTRIBUTE__WARN_UNUSED_RESULT
+    FAIL_REGEX
+        "unknown attribute"             # CLang/LLVM
+        "attribute directive ignored"   # GNU
+        "unknown attribute"             # Intel
+        "unknown attribute"             # PGI
 )
 
 include_directories(${PROJECT_BINARY_DIR}/include)
