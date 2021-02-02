@@ -4,14 +4,14 @@
  * 
  * 
  */
+#include "HAWOpenCL.h"
+
 #if defined(__APPLE__) && defined(__MACH__)
 #include <OpenCL/cl.h>
 #else
 #include <CL/cl.h>
 #endif
 #include <stdlib.h>
-
-#include "HAWOpenCL.h"
 
 #define LEN (1024*1024)
 #define USE_DEVICE_TYPE (CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU)

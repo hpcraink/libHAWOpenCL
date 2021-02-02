@@ -26,6 +26,9 @@
 /* Define to 1 if user set -DHAWOPENCL_WANT_OPENGL. */
 #cmakedefine HAWOPENCL_WANT_OPENGL 1
 
+/* Defines the Open CL Version to be set; 120 for Open CL-1.2 is the default. */
+#cmakedefine HAWOPENCL_CL_VERSION 120
+
 /*****************************************************************************/
 /*  Following is not dependent on cmake; rather evaluates from the previous  */
 /*****************************************************************************/
@@ -51,5 +54,7 @@
 #else
 #  define __HAW_OPENCL_ATTR_WARN_UNUSED_RESULT__
 #endif
+
+#define CL_TARGET_OPENCL_VERSION HAWOPENCL_CL_VERSION
 
 #endif /* HAWOPENCL_CONFIG_H */

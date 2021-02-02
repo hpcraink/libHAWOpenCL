@@ -10,6 +10,10 @@ check_include_files("sys/types.h" HAVE_SYS_TYPES_H)
 check_include_files("sys/stat.h" HAVE_SYS_STAT_H)
 check_include_files("unistd.h" HAVE_UNISTD_H)
 
+set(HAWOPENCL_CL_VERSION "120" CACHE STRING "Preferred OpenCL Version; one of 100 (1.0), 110 (1.1), DEFAULT 120 (1.2), 200 (2.0), 210 (2.1), 220 (2.2) and 300 (3.0)")
+set_property(CACHE HAWOPENCL_CL_VERSION PROPERTY STRINGS 100 110 120 200 210 220 300)
+mark_as_advanced(HAWOPENCL_CL_VERSION)
+
 option (HAWOPENCL_WANT_OPENGL "If the OpenCL library should work with/on GPU using OpenGL")
 
 # Wonderful: CMP0072 is warning ALL the time about the changed behaviour of find_package(OpenGL)
