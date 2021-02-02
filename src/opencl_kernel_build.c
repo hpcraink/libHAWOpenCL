@@ -97,6 +97,12 @@ int opencl_kernel_build(const char * kernel_source,
     *kernel = clCreateKernel(cl_program, kernel_name, &err);
     if (!*kernel || CL_SUCCESS != err)
         FATAL_ERROR("clCreateKernel", err);
+#if defined (CL_KERNEL_BINARY_PROGRAM_INTEL)
+    err = clGetKernelInfo(*kernel, CL_KERNEL_BINARY_PROGRAM_INTEL, 0, NULL, &len);
+    if (CL_SUCCESS != err)
+        FATAL_ERROR("clGetKernelInfo", err);
+    fprintf(stderr, "INFO: CL_KERNEL_BINARY_PROGRAM_INTEL available len:%d\n", len);
+#endif
 
     err = clReleaseProgram(cl_program);
     if (CL_SUCCESS != err)
