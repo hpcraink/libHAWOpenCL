@@ -80,11 +80,18 @@ int opencl_get_devices(const cl_device_type on_device_type,
         for (j = 0; j < num; j++) {
             size_t len;
             cl_device_id id = cl_devices[j];
+            cl_device_type type;
 
             err = clGetDeviceInfo(id, CL_DEVICE_NAME, 0, NULL, &len);
             if (CL_SUCCESS != err)
                 FATAL_ERROR("clGetDeviceInfo", err);
+
+            err = clGetDeviceInfo(id, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL);
+            if (CL_SUCCESS != err)
+                FATAL_ERROR("clGetDeviceInfo", err);
+
             (*devices)[j].device_id = id;
+            (*devices)[j].device_type = type;
             (*devices)[j].device_name = (char*)malloc(len * sizeof(char));
 
             err = clGetDeviceInfo(id, CL_DEVICE_NAME,

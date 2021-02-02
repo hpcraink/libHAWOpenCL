@@ -46,6 +46,7 @@ BEGIN_C_DECLS
 
 typedef struct {
     cl_device_id device_id;
+    cl_device_type device_type;
     char * device_name;
 } hawopencl_device;
 
