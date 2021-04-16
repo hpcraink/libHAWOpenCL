@@ -286,3 +286,4 @@ int opencl_profile_event_print(const hawopencl_profile_events * events) __HAW_OP
 END_C_DECLS
 
 #endif /* HAWOPENCL_H */
+
