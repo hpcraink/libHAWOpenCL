@@ -78,7 +78,7 @@ int opencl_kernel_build(const char * kernel_source,
         size_t len = 0;
 
         printf("--------------------------------------\n");
-        printf("Building failed of Kernel '%s' failed:\n", kernel_name);
+        printf("Building of Kernel '%s' failed:\n", kernel_name);
 
         BUILD_LOG(cl_program, device_id, CL_PROGRAM_BUILD_OPTIONS, build_log, len);
         printf("Build Options (len:%zd):\n%s\n", len, build_log);
