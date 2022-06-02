@@ -859,44 +859,83 @@ opencl_devinfo_t opencl_devinfo[] = {
 int opencl_print_platform(cl_platform_id cl_platform)
 {
     int err;
-    char cl_platform_profile[512];
-    char cl_platform_name[512];
-    char cl_platform_version[512];
-    char cl_platform_vendor[512];
-    char cl_platform_extensions[512];
+    size_t len;
+    char * cl_platform_profile;
+    char * cl_platform_name;
+    char * cl_platform_version;
+    char * cl_platform_vendor;
+    char * cl_platform_extensions;
 
+    // Get Platform profile
+    err = clGetPlatformInfo(cl_platform, CL_PLATFORM_PROFILE, 0, NULL, &len);
+    if (CL_SUCCESS != err)
+        FATAL_ERROR("clGetPlatformInfo", err);
+    cl_platform_profile = (char*) malloc(len);
+    if (NULL == cl_platform_profile)
+        FATAL_ERROR("malloc", ENOMEM);
     err = clGetPlatformInfo(cl_platform, CL_PLATFORM_PROFILE,
-                            sizeof(cl_platform_profile), &cl_platform_profile, NULL);
+                            len, cl_platform_profile, NULL);
     if (CL_SUCCESS != err)
         FATAL_ERROR("clGetPlatformInfo", err);
 
+    // Get Platform name
+    err = clGetPlatformInfo(cl_platform, CL_PLATFORM_NAME, 0, NULL, &len);
+    if (CL_SUCCESS != err)
+        FATAL_ERROR("clGetPlatformInfo", err);
+    cl_platform_name = (char*) malloc(len);
+    if (NULL == cl_platform_name)
+        FATAL_ERROR("malloc", ENOMEM);
     err = clGetPlatformInfo(cl_platform, CL_PLATFORM_NAME,
-                            sizeof(cl_platform_name), &cl_platform_name, NULL);
+                            len, cl_platform_name, NULL);
     if (CL_SUCCESS != err)
         FATAL_ERROR("clGetPlatformInfo", err);
 
+    err = clGetPlatformInfo(cl_platform, CL_PLATFORM_VERSION, 0, NULL, &len);
+    if (CL_SUCCESS != err)
+        FATAL_ERROR("clGetPlatformInfo", err);
+    cl_platform_version = (char*) malloc(len);
+    if (NULL == cl_platform_version)
+        FATAL_ERROR("malloc", ENOMEM);
     err = clGetPlatformInfo(cl_platform, CL_PLATFORM_VERSION,
-                            sizeof(cl_platform_version), &cl_platform_version, NULL);
+                            len, cl_platform_version, NULL);
     if (CL_SUCCESS != err)
         FATAL_ERROR("clGetPlatformInfo", err);
 
+    err = clGetPlatformInfo(cl_platform, CL_PLATFORM_VENDOR, 0, NULL, &len);
+    if (CL_SUCCESS != err)
+        FATAL_ERROR("clGetPlatformInfo", err);
+    cl_platform_vendor = (char*) malloc(len);
+    if (NULL == cl_platform_vendor)
+        FATAL_ERROR("malloc", ENOMEM);
     err = clGetPlatformInfo(cl_platform, CL_PLATFORM_VENDOR,
-                            sizeof(cl_platform_vendor), &cl_platform_vendor, NULL);
+                            len, cl_platform_vendor, NULL);
     if (CL_SUCCESS != err)
         FATAL_ERROR("clGetPlatformInfo", err);
 
+    err = clGetPlatformInfo(cl_platform, CL_PLATFORM_EXTENSIONS, 0, NULL, &len);
+    if (CL_SUCCESS != err)
+        FATAL_ERROR("clGetPlatformInfo", err);
+    cl_platform_extensions = (char*) malloc(len);
+    if (NULL == cl_platform_extensions)
+        FATAL_ERROR("malloc", ENOMEM);
     err = clGetPlatformInfo(cl_platform, CL_PLATFORM_EXTENSIONS,
-                            sizeof(cl_platform_extensions), &cl_platform_extensions, NULL);
+                            len, cl_platform_extensions, NULL);
     if (CL_SUCCESS != err)
         FATAL_ERROR("clGetPlatformInfo", err);
 
     printf ("Platform:\n"
-            "\tname:%s Vendor:%s\n"
+            "\tVendor:%s\n"
+            "\tName:%s\n"
             "\tVersion:%s\n"
             "\tProfile:%s\n"
             "\tExtensions:%s\n",
-            cl_platform_name, cl_platform_vendor, cl_platform_version,
+            cl_platform_vendor, cl_platform_name, cl_platform_version,
             cl_platform_profile, cl_platform_extensions);
+    free(cl_platform_extensions);
+    free(cl_platform_vendor);
+    free(cl_platform_version);
+    free(cl_platform_name);
+    free(cl_platform_profile);
 #if defined(CL_VERSION_2_1)
     {
         // The host timer resolution information is available with OpenCL 2.1
