@@ -17,13 +17,17 @@
 #define USE_DEVICE_TYPE (CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU)
 #define USE_DEVICE_NUM  0
 
+// Keep it as string here, otherwise automatic tests might fail due to NOT
+// setting the env-var OPENCL_KERNEL_PATH correctly.
 const char KERNEL_SOURCE[] = "\n" \
-    "__kernel void vector_add(__global int* a, __global int* b, const unsigned int count)\n"
+    "__kernel void vector_add(__global int * a, \n"
+    "                         __global __read_only int * b, \n"
+    "                         const unsigned int count)\n"
     "{\n"
-    "  const size_t i = get_global_id(0);\n"
-    "  if (i < count) {\n"
-    "    a[i] += b[i];\n"
-    "  }\n"
+    "    const size_t i = get_global_id(0);\n"
+    "    if (i < count) {\n"
+    "        a[i] += b[i];\n"
+    "    }\n"
     "}\n";
 
 int main(int argc, char * argv[]) {
@@ -53,8 +57,7 @@ int main(int argc, char * argv[]) {
     // opencl_init(USE_DEVICE_TYPE, 0, &device_id, &context, &command_queue);
     opencl_init(USE_DEVICE_TYPE, haw_devices[USE_DEVICE_NUM].device_id, &device_id, &context, &command_queue);
     // opencl_print_device(device_id);
-    opencl_kernel_build(KERNEL_SOURCE, "vector_add",
-                        device_id, context, &kernel);
+    opencl_kernel_build(KERNEL_SOURCE, "vector_add", device_id, context, &kernel);
     
     a = (int*) malloc(sizeof(int) * count);
     b = (int*) malloc(sizeof(int) * count);
@@ -66,9 +69,9 @@ int main(int argc, char * argv[]) {
         b[i] = 1;
     }
 
-    // Now we could execute on the device
-    cl_a = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(int) * count, a, NULL);
-    cl_b = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int) * count, b, NULL);
+    // Now we could execute on the device; read-write / read-only are from the view of the Kernel.
+    cl_a = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(cl_int) * count, a, NULL);
+    cl_b = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_int) * count, b, NULL);
     if (!cl_a || !cl_b)
         FATAL_ERROR("Failed to allocate device memory", ENOMEM);
 
@@ -101,5 +104,14 @@ int main(int argc, char * argv[]) {
         printf("a[%d]:%d\n", i, a[i]);
     }
 #endif
+    // Release resources
+    OPENCL_CHECK(clReleaseMemObject, (cl_a));
+    OPENCL_CHECK(clReleaseMemObject, (cl_b));
+    OPENCL_CHECK(clReleaseKernel, (kernel));
+    OPENCL_CHECK(clReleaseContext, (context));
+    OPENCL_CHECK(clReleaseCommandQueue, (command_queue));
+    OPENCL_CHECK(clReleaseDevice, (device_id));
+    free (haw_devices);
+
     return 0;
 }
