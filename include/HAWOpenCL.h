@@ -1,8 +1,8 @@
-/*
+/**
  *  Library to ease OpenCL Programming
  *
  *  Copyright (c) 2015-2016 Rainer Keller, HFT Stuttgart. All rights reserved.
- *  Copyright (c) 2018-2021 Rainer Keller, HS Esslingen. All rights reserved.
+ *  Copyright (c) 2018-2022 Rainer Keller, HS Esslingen. All rights reserved.
  *
  */
 
@@ -36,8 +36,9 @@
 // Usage: OPENCL_CHECK(clFinish, (command_queue));
 #define OPENCL_CHECK(func, args) do { \
     int __err = func args; \
-    if (CL_SUCCESS != __err) \
+    if (CL_SUCCESS != __err) { \
         FATAL_ERROR(#func, __err); \
+    } \
 } while(0)
 
 BEGIN_C_DECLS
@@ -132,7 +133,7 @@ int opencl_print_info(void);
  * @param[out] devices       The array of matching devices.
  * 
  * @return CL_SUCCESS in case of no error
- * @warn The User is responsible for freeing the devices array!
+ * @warning The User is responsible for freeing the devices array!
  */
 int opencl_get_devices(const cl_device_type on_device_type, 
         cl_uint * num_devices,
@@ -153,6 +154,7 @@ int opencl_get_devices(const cl_device_type on_device_type,
  * @param[out] command_queue The command queue to which further commands are send.
  * 
  * @return CL_SUCCESS in case of no error
+ * @warning User has to release context and command_queue upon exit
  */
 int opencl_init(const cl_device_type on_device_type,
         cl_device_id preferred_device_id,
@@ -202,7 +204,7 @@ char * opencl_kernel_load(const char * kernel_file_name) __HAW_OPENCL_ATTR_NONNU
  * Builds a kernel of name from the specified kernel string
  * for a specific device.
  * 
- * PLEASE NOTE: This needs to be called after OpenGL Initialization
+ * @remark PLEASE NOTE: This needs to be called after OpenGL Initialization
  *
  * @param kernel_source[in]  The kernels source code
  * @param kernel_name[in]    The kernel name within the source
@@ -286,4 +288,3 @@ int opencl_profile_event_print(const hawopencl_profile_events * events) __HAW_OP
 END_C_DECLS
 
 #endif /* HAWOPENCL_H */
-
