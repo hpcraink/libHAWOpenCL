@@ -21,7 +21,7 @@
 // setting the env-var OPENCL_KERNEL_PATH correctly.
 const char KERNEL_SOURCE[] = "\n" \
     "__kernel void vector_add(__global int * a, \n"
-    "                         __global __read_only int * b, \n"
+    "                         __global int * b, \n"
     "                         const unsigned int count)\n"
     "{\n"
     "    const size_t i = get_global_id(0);\n"
