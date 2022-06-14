@@ -154,6 +154,8 @@ int opencl_get_devices(const cl_device_type on_device_type,
  * @param[out] command_queue The command queue to which further commands are send.
  * 
  * @return CL_SUCCESS in case of no error
+ * @note In case, user compiles with HAWOPENCL_WANT_OPENGL, this has to be called after
+ *       creating a OpenGL context.
  * @warning User has to release context and command_queue upon exit
  */
 int opencl_init(const cl_device_type on_device_type,
