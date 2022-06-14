@@ -13,10 +13,10 @@ if(HAWOPENCL_WANT_OPENGL)
 endif()
 
 add_executable (opencl_print_info opencl_print_info.c) 
-target_link_libraries(opencl_print_info HAWOpenCL ${OpenCL_LIBRARIES} ${OPENGL_gl_LIBRARY})
+target_link_libraries(opencl_print_info HAWOpenCL ${OpenCL_LIBRARIES} ${OPENGL_LIBRARIES})
 
 add_executable (opencl_vector_add opencl_vector_add.c) 
-target_link_libraries(opencl_vector_add HAWOpenCL ${OpenCL_LIBRARIES} ${OPENGL_gl_LIBRARY})
+target_link_libraries(opencl_vector_add HAWOpenCL ${OpenCL_LIBRARIES} ${OPENGL_LIBRARIES})
 
 
 install(TARGETS opencl_print_info
