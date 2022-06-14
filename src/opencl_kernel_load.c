@@ -81,12 +81,13 @@ static int opencl_kernel_skip_while(char * buffer, size_t buffer_len, int * from
     assert (NULL != from);
     assert (NULL != skip_characters);
     int i = *from;
+    int j;
     bool skip_character_found = true;
 
     // go over until the end of Skip-Characters
     while (i < buffer_len && skip_character_found) {
         skip_character_found = false;
-        for (int j = 0; j < strlen(skip_characters); j++)
+        for (j = 0; j < strlen(skip_characters); j++)
             if (buffer[i] == skip_characters[j])
                 skip_character_found = true;
         if (skip_character_found)
@@ -108,11 +109,12 @@ static int opencl_kernel_skip_until(char * buffer, size_t buffer_len, int * from
     assert (NULL != from);
     assert (NULL != skip_characters);
     int i;
+    int j;
     bool skip_character_found = false;
 
     // go over until the end of Skip-Characters
     for (i = *from; i < buffer_len; i++) {
-        for (int j = 0; j < strlen(skip_characters); j++)
+        for (j = 0; j < strlen(skip_characters); j++)
             if (buffer[i] == skip_characters[j]) {
                 skip_character_found = true;
                 goto out;
