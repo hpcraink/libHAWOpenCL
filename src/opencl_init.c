@@ -122,6 +122,20 @@ int opencl_init(const cl_device_type on_device_type,
         }
         // Warn the user, there's more than one fitting device
         if (num_device > 1) {
+#if defined (HAWOPENCL_WANT_OPENGL)
+            char * renderer = "(none)";
+#if defined(__APPLE__) && defined(__MACH__)
+            if (NULL != CGLGetCurrentContext())
+                renderer = glGetString(GL_RENDERER);
+#elif defined(__linux__)
+            if (NULL != glXGetCurrentContext())
+                renderer = glGetString(GL_RENDERER);
+#elif defined(_WIN32) || defined(_WIN64)
+            if (NULL != wglGetCurrentContext())
+                renderer = glGetString(GL_RENDERER);
+#endif
+#endif /* HAWOPENCL_WANT_OPENGL */
+
             // The warning is more elaborate if we want OpenGL and have more devices.
             fprintf(stderr, "ATTENTION: opencl_init() detected %d OpenCL devices. "
 #if defined (HAWOPENCL_WANT_OPENGL)
@@ -131,7 +145,7 @@ int opencl_init(const cl_device_type on_device_type,
 #endif
                     , num_device
 #if defined (HAWOPENCL_WANT_OPENGL)
-                    , (glGetString(GL_RENDERER) == 0) ? "(none)" : (char*) glGetString(GL_RENDERER)
+                    , renderer
 #else
                     , ((preferred_device_id == 0) ? "1." : "preferred")
 #endif                                  
