@@ -8,6 +8,9 @@
 /* Define to 1 if system has <stdlib.h> header file. */
 #cmakedefine HAVE_STDLIB_H 1
 
+/* Define to 1 if system has <stdbool.h> header file. */
+#cmakedefine HAVE_STDBOOL_H 1
+
 /* Define to 1 if system has <sys/stat.h> header file. */
 #cmakedefine HAVE_SYS_STAT_H 1
 
@@ -28,6 +31,9 @@
 
 /* Defines the Open CL Version to be set; 120 for Open CL-1.2 is the default. */
 #cmakedefine HAWOPENCL_CL_VERSION 120
+
+/* Defines the Source Directory (in order to find OpenCL Kernels) */
+#cmakedefine HAWOPENCL_SOURCE_DIR "@HAWOPENCL_SOURCE_DIR@"
 
 /*****************************************************************************/
 /*  Following is not dependent on cmake; rather evaluates from the previous  */

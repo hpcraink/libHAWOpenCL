@@ -48,6 +48,8 @@ add_subdirectory(doc)
 add_subdirectory(src)
 add_subdirectory(test)
 
+set(HAWOPENCL_SOURCE_DIR ${CMAKE_SOURCE_DIR})
+
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (

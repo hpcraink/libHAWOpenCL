@@ -5,6 +5,7 @@ find_package(OpenCL REQUIRED)
 include_directories(${OpenCL_INCLUDE_DIR})
 link_directories(${OpenCL_LIBRARY})
 
+check_include_files("stdbool.h" HAVE_STDBOOL_H)
 check_include_files("stdlib.h" HAVE_STDLIB_H)
 check_include_files("sys/types.h" HAVE_SYS_TYPES_H)
 check_include_files("sys/stat.h" HAVE_SYS_STAT_H)

@@ -2,7 +2,7 @@
 //  opencl_init.c : Part of libHAWOpenCL
 //
 //  Copyright (c) 2015-2016 Rainer Keller, HFT Stuttgart. All rights reserved.
-//  Copyright (c) 2018-2021 Rainer Keller, HS Esslingen. All rights reserved.
+//  Copyright (c) 2018-2022 Rainer Keller, HS Esslingen. All rights reserved.
 //
 #include "HAWOpenCL_config.h"
 
@@ -26,6 +26,7 @@
 #include <OpenGL/gl.h>
 #else
 #include <GL/gl.h>
+#include <GL/glx.h>
 #include <CL/cl_gl.h>
 #endif
 #endif
@@ -64,7 +65,10 @@ int opencl_init(const cl_device_type on_device_type,
     if (CL_SUCCESS != err)
         FATAL_ERROR("clGetPlatformIDs", err);
     assert (actual_platform == num_platform);
-    
+
+    static char * cl_platform_name = NULL;
+    static size_t cl_platform_name_len = 0;
+
     for (platform = 0; platform < num_platform; platform++) {
         // First get the numbers of devices for this specific type on this platform
         err = clGetDeviceIDs(cl_platform[platform], on_device_type, 0, NULL, &num_device);
@@ -73,13 +77,30 @@ int opencl_init(const cl_device_type on_device_type,
             FATAL_ERROR("clGetDeviceIDs", err);
         // First print do some error printing (if any)
         if (CL_DEVICE_NOT_FOUND == err) {
+            size_t len;
             char * tmp;
             char cl_device_type_name[512];
-            char cl_platform_name[512];
+            
             err = clGetPlatformInfo(cl_platform[platform], CL_PLATFORM_NAME,
-                    sizeof (cl_platform_name), &cl_platform_name, NULL);
+                    0, NULL, &len);
             if (CL_SUCCESS != err)
                 FATAL_ERROR("clGetPlatformInfo", err);
+            if (NULL == cl_platform_name) {
+                cl_platform_name = malloc(len);
+                if (NULL == cl_platform_name)
+                    FATAL_ERROR("malloc", ENOMEM);
+                cl_platform_name_len = len;
+            } else if (len > cl_platform_name_len) {
+                cl_platform_name = realloc(cl_platform_name, len);
+                if (NULL == cl_platform_name)
+                    FATAL_ERROR("realloc", ENOMEM);
+                cl_platform_name_len = len;
+            }
+            err = clGetPlatformInfo(cl_platform[platform], CL_PLATFORM_NAME,
+                    0, NULL, &len);
+            if (CL_SUCCESS != err)
+                FATAL_ERROR("clGetPlatformInfo", err);
+
 
             // The device type may be either CUSTOM or a combination...
             if (on_device_type & CL_DEVICE_TYPE_CUSTOM)
@@ -119,6 +140,12 @@ int opencl_init(const cl_device_type on_device_type,
         }
         if (num_device >= 1)
             break;
+    }
+    // Free the cl_platform_name again, if it was allocated
+    if (NULL != cl_platform_name) {
+        free (cl_platform_name);
+        cl_platform_name = NULL;
+        cl_platform_name_len = 0;
     }
     // By NOW, we should have at least one fitting device within this platform
     if (platform == num_platform) {
@@ -217,6 +244,8 @@ int opencl_init(const cl_device_type on_device_type,
     cl_properties[4] = CL_CONTEXT_PLATFORM;
     cl_properties[5] = (cl_context_properties) cl_platform[platform];
     cl_properties[6] = 0;
+    assert (NULL != (char*) cl_properties[1]);
+    assert (NULL != (char*) cl_properties[3]);
     /* For Linux we are dependent on the Khronos extension to get the OpenGL context info */
 #if defined (CL_VERSION_1_2)
     clGetGLContextInfoKHR_fn func = clGetExtensionFunctionAddressForPlatform(cl_platform[platform], "clGetGLContextInfoKHR");
