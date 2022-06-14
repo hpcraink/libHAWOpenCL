@@ -252,7 +252,7 @@ int opencl_init(const cl_device_type on_device_type,
         cl_properties[5] = (cl_context_properties) cl_platform[platform];
         cl_properties[6] = 0;
 
-        assert (NULL != (char*) cl_properties[1]);D // in case of No GL-Context, we cannot guarantee
+        assert (NULL != (char*) cl_properties[1]); // in case of No GL-Context, we cannot guarantee
         assert (NULL != (char*) cl_properties[3]);
     }
 
