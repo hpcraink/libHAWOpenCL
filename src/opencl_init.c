@@ -97,10 +97,9 @@ int opencl_init(const cl_device_type on_device_type,
                 cl_platform_name_len = len;
             }
             err = clGetPlatformInfo(cl_platform[platform], CL_PLATFORM_NAME,
-                    0, NULL, &len);
+                    len, cl_platform_name, &len);
             if (CL_SUCCESS != err)
                 FATAL_ERROR("clGetPlatformInfo", err);
-
 
             // The device type may be either CUSTOM or a combination...
             if (on_device_type & CL_DEVICE_TYPE_CUSTOM)
@@ -252,26 +251,35 @@ int opencl_init(const cl_device_type on_device_type,
         cl_properties[5] = (cl_context_properties) cl_platform[platform];
         cl_properties[6] = 0;
 
-        assert (NULL != (char*) cl_properties[1]); // in case of No GL-Context, we cannot guarantee
-        assert (NULL != (char*) cl_properties[3]);
-    }
-
-    /* For Linux we are dependent on the Khronos extension to get the OpenGL context info */
+        /* For Linux we are dependent on the Khronos extension to get the OpenGL context info */
 #if defined (CL_VERSION_1_2)
-    clGetGLContextInfoKHR_fn func = clGetExtensionFunctionAddressForPlatform(cl_platform[platform], "clGetGLContextInfoKHR");
+        clGetGLContextInfoKHR_fn func = clGetExtensionFunctionAddressForPlatform(cl_platform[platform], "clGetGLContextInfoKHR");
 #else
-    clGetGLContextInfoKHR_fn func = clGetExtensionFunctionAddress("clGetGLContextInfoKHR");
+        clGetGLContextInfoKHR_fn func = clGetExtensionFunctionAddress("clGetGLContextInfoKHR");
 #endif /* CL_VERSION_1_2 */
 
-    if (NULL == func) {
-        FATAL_ERROR("clGetGLContextInfoKHR not supported", EINVAL);
+        if (NULL == func) {
+            FATAL_ERROR("clGetGLContextInfoKHR not supported", EINVAL);
+        }
+
+        func(cl_properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof (cl_device_id), device_id, NULL);
+    }
+    if (preferred_device_id == 0) {
+        err = clGetDeviceIDs(cl_platform[platform], on_device_type, 1, &preferred_device_id, NULL);
+        if (CL_SUCCESS != err)
+            FATAL_ERROR("clGetDeviceIDs", err);
     }
 
-    func(cl_properties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof (cl_device_id), device_id, NULL);
     // Create a context with this one device
-    *context = clCreateContext(NULL, 1, device_id, NULL, NULL, &err);
+    cl_properties[0]=CL_CONTEXT_PLATFORM;
+    cl_properties[1]=(long int) cl_platform[platform];
+    cl_properties[2]=0;
+
+    *context = clCreateContext(cl_properties, 1, &preferred_device_id, NULL, NULL, &err);
     if (NULL == *context || CL_SUCCESS != err)
         FATAL_ERROR("clCreateContext", err);
+    *device_id = preferred_device_id;
+
 #elif defined(_WIN32) || defined(_WIN64)
     // Windows:
     cl_properties[0] = CL_GET_CONTEXT_KHR;
