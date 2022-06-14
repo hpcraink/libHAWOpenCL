@@ -183,10 +183,13 @@ int opencl_init(const cl_device_type on_device_type,
         *device_id = preferred_device_id;
     }
     // Create a context with this one device; for apple enable logging to stdout.
-#if defined(__APPLE__) && defined(__MACH__) && 1
+#if defined(__APPLE__) && defined(__MACH__)
     *context = clCreateContext(NULL, 1, device_id, clLogMessagesToStdoutAPPLE, NULL, &err);
 #else
-    *context = clCreateContext(NULL, 1, device_id, NULL, NULL, &err);
+    cl_properties[0]=CL_CONTEXT_PLATFORM;
+    cl_properties[1]=(long int) cl_platform[platform];
+    cl_properties[2]=0;
+    *context = clCreateContext(cl_properties, 1, device_id, NULL, NULL, &err);
 #endif
     if (NULL == *context || CL_SUCCESS != err)
         FATAL_ERROR("clCreateContext", err);
@@ -237,15 +240,22 @@ int opencl_init(const cl_device_type on_device_type,
     // NOW, we should have a context for a device according the on_device_type and OpenGL
     printf ("OpenCL running with%s OpenGL context", NULL == cglContext ? "out" : "");
 #elif defined(__linux__)
-    cl_properties[0] = CL_GL_CONTEXT_KHR;
-    cl_properties[1] = (cl_context_properties) glXGetCurrentContext();
-    cl_properties[2] = CL_GLX_DISPLAY_KHR;
-    cl_properties[3] = (cl_context_properties) glXGetCurrentDisplay();
-    cl_properties[4] = CL_CONTEXT_PLATFORM;
-    cl_properties[5] = (cl_context_properties) cl_platform[platform];
-    cl_properties[6] = 0;
-    assert (NULL != (char*) cl_properties[1]);
-    assert (NULL != (char*) cl_properties[3]);
+    // If any of the two functions fails, don't provie any cl_properties
+    if (NULL == glXGetCurrentContext() || NULL == glXGetCurrentDisplay())
+        cl_properties[0] =  0;
+    else {
+        cl_properties[0] = CL_GL_CONTEXT_KHR;
+        cl_properties[1] = (cl_context_properties) glXGetCurrentContext();
+        cl_properties[2] = CL_GLX_DISPLAY_KHR;
+        cl_properties[3] = (cl_context_properties) glXGetCurrentDisplay();
+        cl_properties[4] = CL_CONTEXT_PLATFORM;
+        cl_properties[5] = (cl_context_properties) cl_platform[platform];
+        cl_properties[6] = 0;
+
+        assert (NULL != (char*) cl_properties[1]);D // in case of No GL-Context, we cannot guarantee
+        assert (NULL != (char*) cl_properties[3]);
+    }
+
     /* For Linux we are dependent on the Khronos extension to get the OpenGL context info */
 #if defined (CL_VERSION_1_2)
     clGetGLContextInfoKHR_fn func = clGetExtensionFunctionAddressForPlatform(cl_platform[platform], "clGetGLContextInfoKHR");
@@ -263,6 +273,7 @@ int opencl_init(const cl_device_type on_device_type,
     if (NULL == *context || CL_SUCCESS != err)
         FATAL_ERROR("clCreateContext", err);
 #elif defined(_WIN32) || defined(_WIN64)
+    // Windows:
     cl_properties[0] = CL_GET_CONTEXT_KHR;
     cl_properties[1] = (cl_context_properties) wglGetCurrentContext();
     cl_properties[2] = CL_WGL_HDC_KHR;
@@ -270,7 +281,6 @@ int opencl_init(const cl_device_type on_device_type,
     cl_properties[4] = CL_CONTEXT_PLATFORM;
     cl_properties[5] = (cl_context_properties) cl_platform;
     cl_properties[6] = 0;
-    /* For Linux we are dependent on the Khronos extension to get the OpenGL context info */
 #if defined (CL_VERSION_1_2)
     clGetGLContextInfoKHR_fn func = clGetExtensionFunctionAddressForPlatform(cl_platform, "clGetGLContextInfoKHR");
 #else
