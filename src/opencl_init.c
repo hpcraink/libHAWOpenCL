@@ -251,7 +251,6 @@ int opencl_init(const cl_device_type on_device_type,
             FATAL_ERROR("clCreateContext", err);
     }
     // NOW, we should have a context for a device according the on_device_type and OpenGL
-    printf ("OpenCL running with%s OpenGL context", NULL == cglContext ? "out" : "");
 #elif defined(__linux__)
     // If any of the two functions fails, don't provie any cl_properties
     if (NULL == glXGetCurrentContext() || NULL == glXGetCurrentDisplay())

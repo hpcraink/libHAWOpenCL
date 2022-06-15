@@ -345,7 +345,7 @@ static size_t opencl_kernel_read_file(FILE * file, char * buffer, size_t len) {
 
 char * opencl_kernel_load(const char * kernel_file_name)
 {
-    char * kernel_paths[5] = { NULL, };
+    char * kernel_paths[6] = { NULL, };
     char * kernel_pwd_env;
     char * buffer;
     char * tmp;
@@ -369,6 +369,7 @@ char * opencl_kernel_load(const char * kernel_file_name)
             FATAL_ERROR("malloc", ENOMEM);
         snprintf(kernel_paths[4], strlen(kernel_paths[3]) + strlen("../include/") +1, "%s/%s", kernel_paths[3], "../include/");
     }
+    kernel_paths[5] = NULL;
 
     file = opencl_kernel_open_file(kernel_paths, kernel_file_name, &file_length);
 
