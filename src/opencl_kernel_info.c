@@ -69,7 +69,7 @@ int opencl_kernel_info(const cl_kernel kernel,
         const cl_device_id device_id,
         hawopencl_kernel * kernel_info) {
     int err;
-    int idx;
+    size_t idx;
 
     memset(kernel_info, 0, sizeof (hawopencl_kernel));
 

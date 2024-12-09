@@ -12,6 +12,9 @@
 #include "HAWOpenCL_config.h"
 
 #include <stdio.h>
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#endif
 #include <errno.h>
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -47,8 +50,13 @@ BEGIN_C_DECLS
 
 typedef struct {
     cl_device_id device_id;
-    cl_device_type device_type;
-    char * device_name;
+    cl_device_type device_type; /** The device type returned by clGetDeviceInfo(CL_DEVICE_TYPE) */
+    char * device_name;         /** The device name returned by clGetDeviceInfo(CL_DEVICE_NAME) */
+    char * extensions;          /** The device extensions as returned by clGetDeviceInfo(CL_DEVICE_EXTENSIONS) */
+    bool gl_preferred_device;
+    bool has_cl_khr_gl_sharing;
+    bool has_cl_khr_gl_event;
+    bool has_cl_compiler;
 } hawopencl_device;
 
 typedef struct {

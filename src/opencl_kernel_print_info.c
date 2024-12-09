@@ -62,7 +62,7 @@ struct access_qualifier {
 };
 
 int opencl_kernel_print_info(const hawopencl_kernel ki) {
-    int idx;
+    unsigned int idx;
     printf("---------- Kernel Information: %s ----------\n",
             ki.kernel_function_name);
     printf("CL_KERNEL_FUNCTION_NAME: %s\n",
@@ -74,8 +74,8 @@ int opencl_kernel_print_info(const hawopencl_kernel ki) {
     printf("CL_KERNEL_NUM_ARGS: %u\n",
             ki.kernel_num_args);
     for (idx = 0; idx < ki.kernel_num_args; idx++) {
-        int i;
-        int printed;
+        unsigned int i;
+        unsigned int printed;
         printf("---------- %d. Argument ----------\n", idx + 1);
         printf("  CL_KERNEL_ARG_TYPE_NAME:%s\n", 
                 (ki.args[idx].arg_type_name == NULL || !strcmp(ki.args[idx].arg_type_name, "")) ?

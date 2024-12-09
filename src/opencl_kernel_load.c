@@ -38,8 +38,8 @@
  * Local functions
  */
 static int opencl_kernel_check_header(const char * path, const int want_fail);
-static int opencl_kernel_skip_while(char * buffer, size_t buffer_len, int * from, const char * skip_characters);
-static int opencl_kernel_skip_until(char * buffer, size_t buffer_len, int * from, const char * skip_characters);
+static int opencl_kernel_skip_while(char * buffer, size_t buffer_len, size_t * from, const char * skip_characters);
+static int opencl_kernel_skip_until(char * buffer, size_t buffer_len, size_t * from, const char * skip_characters);
 static char * opencl_kernel_replace_include(char * kernel_paths[], const char * kernel_filename, char * buffer, size_t buffer_len);
 static FILE * opencl_kernel_open_file(char * file_paths[],const char * file_name, size_t * file_length);
 static size_t opencl_kernel_read_file(FILE * file, char * buffer, size_t len);
@@ -75,13 +75,13 @@ static int opencl_kernel_check_header(const char * path, const int want_fail) {
 }
 
 // Skip while buffer contains chars in character set and fail if length is beyond limit
-static int opencl_kernel_skip_while(char * buffer, size_t buffer_len, int * from, const char * skip_characters) {
+static int opencl_kernel_skip_while(char * buffer, size_t buffer_len, size_t * from, const char * skip_characters) {
     assert (NULL != buffer);
     assert (0 < buffer_len);
     assert (NULL != from);
     assert (NULL != skip_characters);
-    int i = *from;
-    int j;
+    size_t i = *from;
+    size_t j;
     bool skip_character_found = true;
 
     // go over until the end of Skip-Characters
@@ -103,13 +103,13 @@ static int opencl_kernel_skip_while(char * buffer, size_t buffer_len, int * from
 }
 
 // Skip until chars in the character set are foun and fail if length is beyond limit
-static int opencl_kernel_skip_until(char * buffer, size_t buffer_len, int * from, const char * skip_characters) {
+static int opencl_kernel_skip_until(char * buffer, size_t buffer_len, size_t * from, const char * skip_characters) {
     assert (NULL != buffer);
     assert (0 < buffer_len);
     assert (NULL != from);
     assert (NULL != skip_characters);
-    int i;
-    int j;
+    size_t i;
+    size_t j;
     bool skip_character_found = false;
 
     // go over until the end of Skip-Characters
@@ -137,17 +137,17 @@ static void opencl_kernel_print(char * buffer, size_t len) {
 // Parses buffer, searching for include and checks for any used header files.
 // returns the extended buffer
 static char * opencl_kernel_replace_include(char * kernel_paths[], const char * kernel_filename, char * buffer, size_t buffer_len) {
-    int i = 0;
+    size_t i = 0;
     #define MAX_INCLUDES 8
     char * include_filenames[MAX_INCLUDES];
     char * include_start[MAX_INCLUDES];
     char * include_end[MAX_INCLUDES];
     char * include_files[MAX_INCLUDES];
     size_t include_files_len[MAX_INCLUDES];
-    int include_line[MAX_INCLUDES];
-    int line_num = 1; // Line numbers start counting with 1!
+    size_t include_line[MAX_INCLUDES];
+    size_t line_num = 1; // Line numbers start counting with 1!
 
-    int includes = 0;
+    size_t includes = 0;
 
     // We need to check for lines containing the regular expression "[ \t]*#[ \t]*include[ \t] \"FILENAME\""
     // and copy the filename, as well as the position, whether to enter and replace 
@@ -199,7 +199,7 @@ static char * opencl_kernel_replace_include(char * kernel_paths[], const char * 
                 if ('"' == buffer[i]) {
                     int len;
                     i++;                         // Do not include the '"' character
-                    int j = i;                   // We start with the filename character array
+                    size_t j = i;                   // We start with the filename character array
                     while (j < buffer_len && '"' != buffer[j]) j++; /* Go over until next closing " */
                     if (j >= buffer_len)
                         FATAL_ERROR("opencl_kernel_replace_include: failed to find closing hyphen for file-name", EINVAL);
@@ -229,7 +229,6 @@ static char * opencl_kernel_replace_include(char * kernel_paths[], const char * 
     // printf("opencl_kernel_replace_include:       includes:%d\n", includes);
     const int kernel_filename_len = strlen(kernel_filename);
     for (i = 0; i < includes; i++) {
-        size_t file_length;
         size_t num_read;
         // printf("  %d. include:%s\n", i, include_filenames[i]);
         FILE * file =  opencl_kernel_open_file(kernel_paths, include_filenames[i], &include_files_len[i]);
@@ -260,7 +259,7 @@ static char * opencl_kernel_replace_include(char * kernel_paths[], const char * 
         p_new += len;
         strncpy (p_new, include_files[i], include_files_len[i]);
         p_new += include_files_len[i];
-        len = snprintf(cpp_buf, sizeof(cpp_buf), "# %d \"%s\"", include_line[i]+1, kernel_filename);
+        len = snprintf(cpp_buf, sizeof(cpp_buf), "# %ld \"%s\"", include_line[i]+1, kernel_filename);
         strncpy (p_new, cpp_buf, len);
         p_new += len;
     }
@@ -348,11 +347,8 @@ char * opencl_kernel_load(const char * kernel_file_name)
     char * kernel_paths[6] = { NULL, };
     char * kernel_pwd_env;
     char * buffer;
-    char * tmp;
     FILE * file;
-    int len;
     size_t num_read;
-    int ret;
     size_t file_length;
 
     assert (NULL != kernel_file_name);

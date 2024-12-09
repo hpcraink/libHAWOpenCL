@@ -30,16 +30,32 @@
 
 #include "HAWOpenCL.h"
 
-int opencl_get_devices(const cl_device_type on_device_type, 
+
+int checkDeviceExtension(const char * extensions, const char * extensionName) {
+    int ret = 0;
+    char * pos;
+
+    if (NULL != (pos = strstr(extensions, extensionName))) {
+        // Check that extensionName is not a prefix of a longer extension name,
+        // if caller asks for extensionName "cl_khr_sup" (which the device does not support)
+        // but extensions contains "cl_khr_super" (which is not, what the user asked for...)
+        const char next_char = pos[strlen(extensionName)];
+        if ('\0' == next_char || ' ' == next_char)
+            ret = 1;
+    }
+    return ret;
+}
+
+int opencl_get_devices(const cl_device_type on_device_type,
         cl_uint * num_devices, hawopencl_device ** devices) {
     assert (num_devices != NULL);
-    int i;
-    int j;
+    unsigned int i;
+    unsigned int j;
     cl_int err;
     cl_platform_id * cl_platform;
     cl_device_id * cl_devices;
     cl_uint num_platform;
-    
+
     // Get all the Platforms first!
     err = clGetPlatformIDs(0, NULL, &num_platform);
     if (CL_SUCCESS != err)
@@ -79,8 +95,10 @@ int opencl_get_devices(const cl_device_type on_device_type,
             FATAL_ERROR("clGetDeviceIDs", err);
         for (j = 0; j < num; j++) {
             size_t len;
+            char * extensions;
             cl_device_id id = cl_devices[j];
             cl_device_type type;
+            cl_bool value;
 
             err = clGetDeviceInfo(id, CL_DEVICE_NAME, 0, NULL, &len);
             if (CL_SUCCESS != err)
@@ -98,6 +116,32 @@ int opencl_get_devices(const cl_device_type on_device_type,
                     len, (*devices)[j].device_name, NULL);
             if (CL_SUCCESS != err)
                 FATAL_ERROR("clGetDeviceInfo", err);
+
+            err = clGetDeviceInfo(id, CL_DEVICE_EXTENSIONS, 0, NULL, &len);
+            if (CL_SUCCESS != err)
+                FATAL_ERROR("clGetDeviceInfo", err);
+            extensions = malloc(sizeof(char) * len);
+            if (NULL == extensions)
+                FATAL_ERROR("malloc", ENOMEM);
+            err = clGetDeviceInfo(id, CL_DEVICE_EXTENSIONS, len, extensions, NULL);
+            if (CL_SUCCESS != err)
+                FATAL_ERROR("clGetDeviceInfo", err);
+
+            if (checkDeviceExtension(extensions, "cl_khr_gl_sharing")
+#if defined(__APPLE__) && defined(__MACH__)
+                 || checkDeviceExtension(extensions, "cl_APPLE_gl_sharing")
+#endif
+                 ) {
+                (*devices)[j].has_cl_khr_gl_sharing = true;
+            } else {
+                (*devices)[j].has_cl_khr_gl_sharing = false;
+            }
+            (*devices)[j].has_cl_khr_gl_event = checkDeviceExtension(extensions, "cl_khr_gl_event");
+            err = clGetDeviceInfo(id, CL_DEVICE_COMPILER_AVAILABLE, sizeof(cl_bool), &value, NULL);
+            if (CL_SUCCESS != err)
+                FATAL_ERROR("clGetDeviceInfo", err);
+            (*devices)[j].has_cl_compiler = value;
+            (*devices)[j].extensions = extensions;
         }
         free (cl_devices);
         // SUCCESS, WE FOUND AT LEAST ONE DEVICE FOR THIS PLATFORM

@@ -38,13 +38,12 @@ int opencl_init(const cl_device_type on_device_type,
         cl_device_id * device_id,
         cl_context * context,
         cl_command_queue * command_queue) {
-    int platform;
+    unsigned int platform;
     int err;
     cl_uint num_platform;
     cl_uint num_device;
     cl_platform_id * cl_platform;
     cl_context_properties cl_properties[7] = {0,};
-    cl_device_id * all_device_ids;
 
     // Get all the Platforms first!
     err = clGetPlatformIDs(0, NULL, &num_platform);
@@ -123,7 +122,7 @@ int opencl_init(const cl_device_type on_device_type,
         // Warn the user, there's more than one fitting device
         if (num_device > 1) {
 #if defined (HAWOPENCL_WANT_OPENGL)
-            char * renderer = "(none)";
+            const unsigned char * renderer = (unsigned char*) "(none)";
 #if defined(__APPLE__) && defined(__MACH__)
             if (NULL != CGLGetCurrentContext())
                 renderer = glGetString(GL_RENDERER);
@@ -177,7 +176,7 @@ int opencl_init(const cl_device_type on_device_type,
             FATAL_ERROR("clGetDeviceIDs", err);
     } else {
         int i;
-        all_device_ids = malloc(sizeof(cl_device_id) * num_device);
+	cl_device_id * all_device_ids = malloc(sizeof(cl_device_id) * num_device);
         if (NULL == all_device_ids)
             FATAL_ERROR("malloc", ENOMEM);
         err = clGetDeviceIDs(cl_platform[platform], on_device_type, num_device, all_device_ids, NULL);
@@ -266,9 +265,9 @@ int opencl_init(const cl_device_type on_device_type,
 
         /* For Linux we are dependent on the Khronos extension to get the OpenGL context info */
 #if defined (CL_VERSION_1_2)
-        clGetGLContextInfoKHR_fn func = clGetExtensionFunctionAddressForPlatform(cl_platform[platform], "clGetGLContextInfoKHR");
+        clGetGLContextInfoKHR_fn func = (clGetGLContextInfoKHR_fn) clGetExtensionFunctionAddressForPlatform(cl_platform[platform], "clGetGLContextInfoKHR");
 #else
-        clGetGLContextInfoKHR_fn func = clGetExtensionFunctionAddress("clGetGLContextInfoKHR");
+        clGetGLContextInfoKHR_fn func = (clGetGLContextInfoKHR_fn) clGetExtensionFunctionAddress("clGetGLContextInfoKHR");
 #endif /* CL_VERSION_1_2 */
 
         if (NULL == func) {
@@ -319,7 +318,8 @@ int opencl_init(const cl_device_type on_device_type,
 #endif /* HAWOPENCL_WANT_OPENGL */
 
     // Create a command queue to issue commands to this device;
-    // Might want to check, if CL_QUEUE_PROFILING_ENABLE is reducing performance... Or whether supported at all...
+    // Might want to check, if CL_QUEUE_PROFILING_ENABLE is reducing performance...
+    // This property is mandatory, anyhow!
     cl_command_queue_properties properties = CL_QUEUE_PROFILING_ENABLE;
 #if defined(CL_VERSION_2_0)
     char * platform_extensions;
