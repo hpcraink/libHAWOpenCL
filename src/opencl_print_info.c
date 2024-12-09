@@ -36,8 +36,9 @@ typedef enum {
 
 static haw_opencl_version_t haw_platform_opencl_version = 0;
 static haw_opencl_version_t haw_device_opencl_version = 0;
+
 // Local functions
-static void opencl_platform_supports_init(cl_platform_id platform) {
+static haw_opencl_version_t opencl_platform_supports_init(cl_platform_id platform) {
     cl_int err;
     size_t len;
     char * platform_version;
@@ -68,12 +69,15 @@ static void opencl_platform_supports_init(cl_platform_id platform) {
         haw_platform_opencl_version = HAW_VERSION_3_0;
 
     free (platform_version);
+
+    return haw_platform_opencl_version;
 }
+
 static int opencl_platform_supports_version(haw_opencl_version_t wants) {
     return (wants > haw_platform_opencl_version) ? 0 : 1;
 }
 
-static void opencl_device_supports_init(cl_device_id device) {
+static haw_opencl_version_t opencl_device_supports_init(cl_device_id device) {
     cl_int err;
     size_t len;     
     char * device_version;
@@ -104,13 +108,14 @@ static void opencl_device_supports_init(cl_device_id device) {
         haw_device_opencl_version = HAW_VERSION_3_0;
 
     free (device_version);
+    return haw_device_opencl_version;
 }   
 static int opencl_device_supports_version(haw_opencl_version_t wants) {
     return (wants > haw_device_opencl_version) ? 0 : 1;
 }   
     
 
-static void opencl_print_device_type(cl_device_id device, void * val) {
+static void opencl_print_device_type(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     cl_device_type my_type = *((cl_device_type*)val);
     struct my_types {
         cl_device_type type;
@@ -142,19 +147,19 @@ static void opencl_print_device_type(cl_device_id device, void * val) {
     printf("\n");
 }
 
-static void opencl_print_device_max_work_item_sizes(cl_device_id device, void * val) {
+static void opencl_print_device_max_work_item_sizes(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     size_t * arr = (size_t*)val;
     printf ("(%zd, %zd, %zd)\n",
             arr[0], arr[1], arr[2]);
 }
 
-static void opencl_print_device_mem_base_addr_align(cl_device_id device, void * val) {
+static void opencl_print_device_mem_base_addr_align(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     cl_uint bits = *((cl_uint*)val);
     printf ("%u Bits\n",
             bits);
 }
 
-static void opencl_print_device_single_fp_config(cl_device_id device, void * val) {
+static void opencl_print_device_single_fp_config(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     cl_device_fp_config fp = *((cl_device_fp_config*)val);
     int i;
     int printed = 0;
@@ -187,7 +192,7 @@ static void opencl_print_device_single_fp_config(cl_device_id device, void * val
 
 }
 
-static void opencl_print_device_double_fp_config(cl_device_id device, void * val) {
+static void opencl_print_device_double_fp_config(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     cl_device_fp_config fp = *((cl_device_fp_config*)val);
     int i;
     int printed = 0;
@@ -221,7 +226,7 @@ static void opencl_print_device_double_fp_config(cl_device_id device, void * val
 }
 
 
-static void opencl_print_device_global_mem_cache_type(cl_device_id device, void * val) {
+static void opencl_print_device_global_mem_cache_type(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     cl_device_mem_cache_type c_type = *((cl_device_mem_cache_type*)val);
 
     if (c_type == CL_NONE)
@@ -258,13 +263,13 @@ static void opencl_print_device_local_mem_type(cl_device_id device, void * val) 
         FATAL_ERROR("opencl_print_device_local_mem_type unexpected value", c_type);
 }
 
-static void opencl_print_device_profiling_timer_resolution(cl_device_id device, void * val) {
+static void opencl_print_device_profiling_timer_resolution(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     size_t resolution = *((size_t*)val);
     printf ("%zd ns = %f usec\n", resolution, 1.0 / 1000.0 * resolution);
 }
 
 
-static void opencl_print_device_execution_capabilities(cl_device_id device, void * val) {
+static void opencl_print_device_execution_capabilities(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     cl_device_exec_capabilities my_val = *((cl_device_exec_capabilities*)val);
     int i;
     int printed = 0;
@@ -291,7 +296,7 @@ static void opencl_print_device_execution_capabilities(cl_device_id device, void
 }
 
 
-static void opencl_print_device_queue_properties(cl_device_id device, void * val) {
+static void opencl_print_device_queue_properties(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     cl_command_queue_properties my_val = *((cl_command_queue_properties*)val);
     int i;
     int printed = 0;
@@ -317,12 +322,12 @@ static void opencl_print_device_queue_properties(cl_device_id device, void * val
     printf ("\n");
 }
 
-static void opencl_print_device_partition_properties(cl_device_id device, void * val) {
+static void opencl_print_device_partition_properties(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     cl_device_partition_property * my_val = (cl_device_partition_property*)val;
     int i;
     int printed = 0;
     struct modes {
-        cl_command_queue_properties val;
+        cl_device_partition_property val;
         char * str;
         char * description;
     } modes[] = {
@@ -347,7 +352,7 @@ static void opencl_print_device_partition_properties(cl_device_id device, void *
 }
 
 
-static void opencl_print_device_partition_affinity_domain(cl_device_id device, void * val) {
+static void opencl_print_device_partition_affinity_domain(cl_device_id device __HAW_OPENCL_ATTR_UNUSED__, void * val) {
     cl_device_affinity_domain my_val = *((cl_device_affinity_domain*)val);
     int i;
     int printed = 0;
@@ -1008,7 +1013,7 @@ int opencl_print_platform(cl_platform_id cl_platform)
 int opencl_print_device(cl_device_id cl_device) {
     char * val;
     size_t val_size = 1024;
-    int i;
+    unsigned int i;
     cl_int err;
     char ocl_device_name[256];
 
@@ -1077,8 +1082,8 @@ int opencl_print_device(cl_device_id cl_device) {
 
 int opencl_print_info(void)
 {
-    cl_int i;
-    cl_int j;
+    cl_uint i;
+    cl_uint j;
     cl_int err;
     cl_uint ocl_numPlatforms;
     cl_uint ocl_numDevices;

@@ -21,16 +21,16 @@
 // setting the env-var OPENCL_KERNEL_PATH correctly.
 const char KERNEL_SOURCE[] = "\n" \
     "__kernel void vector_add(__global int * a, \n"
-    "                         __global int * b, \n"
-    "                         const unsigned int count)\n"
+    "                         __global const int * b, \n"
+    "                         const unsigned int len)\n"
     "{\n"
     "    const size_t i = get_global_id(0);\n"
-    "    if (i < count) {\n"
+    "    if (i < len) {\n"
     "        a[i] += b[i];\n"
     "    }\n"
     "}\n";
 
-int main(int argc, char * argv[]) {
+int main(int argc __HAW_OPENCL_ATTR_UNUSED__, char * argv[] __HAW_OPENCL_ATTR_UNUSED__) {
     cl_device_id device_id;
     cl_context context;
     cl_command_queue command_queue;
@@ -38,7 +38,7 @@ int main(int argc, char * argv[]) {
     cl_mem cl_a;
     cl_mem cl_b;
     unsigned int count = LEN;
-    int i;
+    unsigned int i;
     int * a;
     int * b;
     size_t global;
@@ -93,6 +93,8 @@ int main(int argc, char * argv[]) {
     
     for (i=0 ; i < count; i++) {
         if (a[i] != 2)
+            break;
+        if (b[i] != 1)
             break;
     }
     if (i != count) {

@@ -26,6 +26,9 @@
 /* Define to 1 if compiler supports __attribute__((warn_unused_result)). */
 #cmakedefine HAVE___ATTRIBUTE__WARN_UNUSED_RESULT 1
 
+/* Define to 1 if compiler supports __attribute__((unused)). */
+#cmakedefine HAVE___ATTRIBUTE__UNUSED 1
+
 /* Define to 1 if user set -DHAWOPENCL_WANT_OPENGL. */
 #cmakedefine HAWOPENCL_WANT_OPENGL 1
 
@@ -59,6 +62,12 @@
 #  define __HAW_OPENCL_ATTR_WARN_UNUSED_RESULT__     __attribute__((warn_unused_result))
 #else
 #  define __HAW_OPENCL_ATTR_WARN_UNUSED_RESULT__
+#endif
+
+#if defined(HAVE___ATTRIBUTE__UNUSED) && (HAVE___ATTRIBUTE__UNUSED == 1)
+#  define __HAW_OPENCL_ATTR_UNUSED__                 __attribute__((unused))
+#else
+#  define __HAW_OPENCL_ATTR_UNUSED__
 #endif
 
 #define CL_TARGET_OPENCL_VERSION HAWOPENCL_CL_VERSION

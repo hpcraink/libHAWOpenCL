@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(HAWOpenCL LANGUAGES C)
 
 enable_language(C)
@@ -41,6 +41,21 @@ check_c_source_compiles(
         "unknown attribute"             # Intel
         "unknown attribute"             # PGI
 )
+
+check_c_source_compiles(
+    "
+        static int f(int arg __attribute__ ((unused)) );
+        static int f(int ar) { return 0; }
+        int main(void) { f(42); return 0;}
+    "
+    HAVE___ATTRIBUTE__UNUSED
+    FAIL_REGEX
+        "unknown attribute"             # CLang/LLVM
+        "attribute directive ignored"   # GNU
+        "unknown attribute"             # Intel
+        "unknown attribute"             # PGI
+)
+
 
 include_directories(${PROJECT_BINARY_DIR}/include)
 
