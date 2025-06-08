@@ -206,6 +206,12 @@ static char * opencl_kernel_replace_include(char * kernel_paths[], const char * 
         size_t num_read;
         // printf("  %d. include:%s\n", i, include_filenames[i]);
         FILE * file =  opencl_kernel_open_file(kernel_paths, include_filenames[i], &include_files_len[i]);
+        if (NULL == file) {
+            fprintf (stderr, "ERROR in %s(): Cannot find OpenCL include file %s; please set env.-var. OPENCL_KERNEL_PATH to the paths where this .h file may be found\n"
+                             "using colon-notation to separate multiple directories, e.g. use export OPENCL_KERNEL_PATH=$PWD/../src:$PWD/include\n",
+                            __func__, include_filenames[i]);
+            FATAL_ERROR("opencl_kernel_replace_include", ENOENT);
+        }
 
         include_files[i] = malloc (include_files_len[i]);
         if (NULL == include_files[i])
@@ -318,9 +324,9 @@ static int opencl_kernel_build_paths(char ** kernel_paths[]) {
 
     /* First figure out the amount of PATHS in OPENCL_KERNEL_PATH */
     if (NULL != kernel_pwd_env) {
-        char * pos = NULL;
-        while (NULL == pos) {
-            pos = strchr (kernel_pwd_env, ':');
+        char * pos = kernel_pwd_env-1; // to start with a value != NULL
+        while (NULL != pos) {
+            pos = strchr (pos+1, ':');
             kernel_paths_num++;
         }
     }

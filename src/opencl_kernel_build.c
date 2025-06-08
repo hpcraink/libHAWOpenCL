@@ -50,22 +50,10 @@ int opencl_kernel_build(const char * kernel_source,
     char * compile_option = NULL;
     int compile_option_len;
 
-    compile_option_len = strlen("-cl-kernel-arg-info");
-    compile_option = strdup("-cl-kernel-arg-info");
-
-    // If this env. var. is set, pass this directory as -I option 
-    // twice to the compiler, aka the length has to be twice plus some overhead.
-    pwd_env = getenv("OPENCL_KERNEL_PATH");
-    if (NULL != pwd_env) {
-        compile_option_len += 2 * strlen(pwd_env) + 256;
-
-        compile_option = (char*) realloc(compile_option, compile_option_len);
-        if (NULL == compile_option)
-            FATAL_ERROR("realloc", ENOMEM);
-        compile_option_len = snprintf(compile_option, compile_option_len,
-                "-cl-kernel-arg-info -I %s -I %s/../include/",
-                pwd_env, pwd_env);
-    }
+    compile_option_len = strlen("-cl-kernel-arg-info -cl-opt-disable");
+    compile_option = strdup("-cl-kernel-arg-info -cl-opt-disable");
+    if (NULL == compile_option)
+        FATAL_ERROR("strdup", ENOMEM);
 
     cl_program = clCreateProgramWithSource(context, 1, (const char**) &kernel_source, NULL, &err);
     if (!cl_program || err != CL_SUCCESS)
